@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .journal-box { background-color: #0f172a; color: #10b981; font-family: monospace; }
+        .report-card { border-top: 4px solid #059669; }
+    </style>
+</head>
+<body class="p-4">
+
+<div class="max-w-6xl mx-auto space-y-4">
+    <div class="bg-emerald-900 text-white p-6 rounded-xl shadow-lg flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold uppercase tracking-tight">MFRS 2: Teaching Innovation Tool</h1>
+            <p class="text-sm opacity-80">Course Code: FAR570 | Lecturer: Pn. Noraida Saidi</p>
+        </div>
+        <div class="text-right hidden sm:block">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Malaysian Accounting Standards</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-4 space-y-4">
+            <div class="bg-white p-5 rounded-xl shadow border border-slate-200">
+                <h3 class="font-bold text-emerald-900 border-b pb-2 mb-4">Grant Setup</h3>
+                
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="font-bold text-slate-500 uppercase">1. Settlement Type [cite: 19-23]</label>
+                        <select id="type" onchange="calcMFRS()" class="w-full mt-1 p-2 border rounded bg-slate-50">
+                            <option value="equity">Equity-Settled (MFRS 2.10)</option>
+                            <option value="cash">Cash-Settled (MFRS 2.30)</option>
+                            <option value="choice">Choice of Settlement (MFRS 2.34)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="font-bold text-slate-500 uppercase">Service Yrs: <span id="v-vp" class="text-emerald-600">3</span></label>
+                            <input type="range" id="vp" min="1" max="5" value="3" oninput="calcMFRS()" class="w-full accent-emerald-600">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-500 uppercase">FV Grant: RM<span id="v-fv" class="text-emerald-600">30</span></label>
+                            <input type="range" id="fv" min="10" max="100" value="30" oninput="calcMFRS()" class="w-full accent-emerald-600">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-slate-500 uppercase">2. Condition Type [cite: 159-160]</label>
+                        <select id="cond" onchange="calcMFRS()" class="w-full mt-1 p-2 border rounded">
+                            <option value="service">Service Condition Only</option>
+                            <option value="nonmarket">Non-Market Performance (e.g. EPS Target)</option>
+                            <option value="market">Market Performance (e.g. Share Price Target)</option>
+                        </select>
+                    </div>
+
+                    <div id="targetMetBox" class="hidden p-3 bg-amber-50 rounded border border-amber-200">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="met" checked onchange="calcMFRS()" class="w-4 h-4 accent-amber-600">
+                            <span class="text-[10px] font-bold text-amber-800 uppercase italic">Target Likely to be Met?</span>
+                        </label>
+                    </div>
+
+                    <div id="priceBox" class="hidden">
+                        <label class="font-bold text-slate-500 uppercase block">3. Remeasurement (Year-End RM): <span id="v-mp">50</span></label>
+                        <input type="range" id="mp" min="10" max="150" value="50" oninput="calcMFRS()" class="w-full h-1.5 bg-slate-200 rounded-lg accent-orange-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-900 text-white p-5 rounded-xl shadow">
+                <h3 class="font-bold text-indigo-300 text-xs uppercase mb-3 underline">3. Settlement Date Event</h3>
+                <select id="action" onchange="calcMFRS()" class="w-full p-2 bg-indigo-800 border-none rounded text-xs text-white">
+                    <option value="none">-- Select Final Settlement --</option>
+                    <option value="shares">Issue Equity Shares</option>
+                    <option value="cash">Pay Cash (Extinguish Liability)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow border-t-4 border-red-500">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-3 italic tracking-widest text-red-500">SOPL (Extract)</h4>
+                    <div class="flex justify-between items-center py-2 border-b">
+                        <span class="text-sm font-medium">Employee Benefit Expense [cite: 37]</span>
+                        <span id="sopl" class="text-red-600 font-bold font-mono">RM 0</span>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow border-t-4 border-emerald-500">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-3 italic tracking-widest text-emerald-500 text-right">SOFP (Extract)</h4>
+                    <div class="space-y-1 text-xs font-mono">
+                        <div class="flex justify-between"><span>Equity: Share Option Reserve [cite: 32]</span><span id="sofp-eq" class="text-emerald-700">0</span></div>
+                        <div class="flex justify-between"><span>Liability: SBP Liability [cite: 33]</span><span id="sofp-li" class="text-orange-600">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="journal-box p-5 rounded-xl shadow-lg border-l-4 border-emerald-500">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-widest opacity-60">MFRS 2 Journal Records [cite: 37-40]</h3>
+                    <span id="status-tag" class="px-2 py-0.5 bg-emerald-600 text-white text-[9px] rounded">VESTING</span>
+                </div>
+                <div id="journals" class="text-[11px] leading-relaxed space-y-2"></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow border border-slate-200 h-48">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let chart;
+function calcMFRS() {
+    const type = document.getElementById('type').value;
+    const vp = parseInt(document.getElementById('vp').value);
+    const fv = parseFloat(document.getElementById('fv').value);
+    const cond = document.getElementById('cond').value;
+    const met = document.getElementById('met').checked;
+    const mp = parseFloat(document.getElementById('mp').value);
+    const action = document.getElementById('action').value;
+
+    // UI Updates
+    document.getElementById('v-vp').innerText = vp;
+    document.getElementById('v-fv').innerText = fv;
+    document.getElementById('v-mp').innerText = mp;
+    document.getElementById('priceBox').style.display = (type !== 'equity') ? 'block' : 'none';
+
+    // Calculation Logic
+    let n = 1000;
+    let recognition = 1;
+    if (cond === 'nonmarket' && !met) recognition = 0; // Reversed if non-market fails [cite: 190]
+    
+    // Fair Value Measurement Principle [cite: 88, 172]
+    let baseFV = (type === 'equity') ? fv : mp;
+    let totalValue = n * baseFV * recognition;
+    let annualExpense = totalValue / vp;
+
+    // Special Case: Choice of Settlement (Compound Instrument) 
+    let eqComp = 0;
+    if (type === 'choice') {
+        eqComp = (n * 1.2 * 45) - (n * 50); // Hypothetical split [cite: 541]
+        if (eqComp < 0) eqComp = 10000; // Simplified for sim
+    }
+
+    // Update SOPL/SOFP Extracts
+    document.getElementById('sopl').innerText = `(RM ${Math.round(annualExpense).toLocaleString()})`;
+    document.getElementById('sofp-eq').innerText = (type !== 'cash') ? `RM ${Math.round(totalValue).toLocaleString()}` : "RM 0";
+    document.getElementById('sofp-li').innerText = (type === 'cash') ? `RM ${Math.round(totalValue).toLocaleString()}` : "RM 0";
+
+    // Dynamic Journal Entries
+    let jHtml = `<p>Dr Employee Benefit Expense ... RM ${Math.round(annualExpense).toLocaleString()}</p>`;
+    let crAcc = (type === 'cash') ? "SBP Liability (Liability)" : "Share Option Reserve (Equity)";
+    jHtml += `<p class="pl-8">Cr ${crAcc} ... RM ${Math.round(annualExpense).toLocaleString()}</p>`;
+
+    if (action !== 'none') {
+        document.getElementById('status-tag').innerText = "SETTLEMENT";
+        jHtml += `<hr class="my-2 border-slate-700">`;
+        if (action === 'shares') {
+            jHtml += `<p>Dr Share Option Reserve / Liability ... RM ${Math.round(totalValue).toLocaleString()}</p>`;
+            jHtml += `<p class="pl-8">Cr Contributed Share Capital ... RM ${Math.round(totalValue).toLocaleString()}</p>`;
+        } else {
+            jHtml += `<p>Dr SBP Liability ... RM ${Math.round(totalValue).toLocaleString()}</p>`;
+            jHtml += `<p class="pl-8">Cr Cash Account ... RM ${Math.round(totalValue).toLocaleString()}</p>`;
+        }
+    } else {
+        document.getElementById('status-tag').innerText = "VESTING";
+    }
+
+    document.getElementById('journals').innerHTML = jHtml;
+    updateChart(annualExpense, vp);
+}
+
+function updateChart(val, vp) {
+    if (chart) chart.destroy();
+    const ctx = document.getElementById('chart').getContext('2d');
+    let labels = []; let data = [];
+    for(let i=1; i<=vp; i++) { labels.push('Yr '+i); data.push(val); }
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ backgroundColor: '#10b981', data: data }] },
+        options: { maintainAspectRatio: false, plugins: { legend: {display: false}, title: {display: true, text: 'Expense Recognition Period [cite: 73]'} } }
+    });
+}
+window.onload = calcMFRS;
+</script>
+</body>
+</html>
